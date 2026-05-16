@@ -1,0 +1,21 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+*.spec
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- CyberSim runtime ---
+logs/
+reports/*.pdf
+reports/*.md
+reports/*.json
+uploads/*
+!uploads/.gitkeep
+data/*.local.*

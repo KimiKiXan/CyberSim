@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir g:\\\\Diploma /b)",
+      "PowerShell($dirs = @\\('server','client','client/widgets','tools','agent_logic','config','reports','uploads','logs','data'\\); foreach \\($d in $dirs\\) { New-Item -ItemType Directory -Force -Path \"g:\\\\Diploma\\\\$d\" | Out-Null }; Get-ChildItem g:\\\\Diploma -Directory | Select-Object Name)",
+      "Bash(mkdir -p g:/Diploma/server g:/Diploma/client/widgets g:/Diploma/tools g:/Diploma/agent_logic g:/Diploma/config g:/Diploma/reports g:/Diploma/uploads g:/Diploma/logs g:/Diploma/data && ls -la g:/Diploma/)",
+      "Bash(python -c ' *)",
+      "Bash(python _syntax_check.py)",
+      "Bash(python _import_check.py)",
+      "Bash(python _functional_check.py)",
+      "Bash(python -c \"import docx; print\\('python-docx', docx.__version__ if hasattr\\(docx, '__version__'\\) else 'present'\\)\")",
+      "Bash(python -c \"import reportlab; print\\('reportlab', reportlab.Version\\)\")",
+      "Bash(python docs/build_docs.py)",
+      "Bash(python _verify_docs.py)",
+      "Bash(ls -1 /c/Windows/Fonts/arial.ttf /c/Windows/Fonts/arialbd.ttf /c/Windows/Fonts/ariali.ttf /c/Windows/Fonts/consola.ttf 2>&1 | head)",
+      "Read(//c/Windows/Fonts/**)",
+      "Bash(python docs/build_docs.py --lang ru)",
+      "Bash(python _verify_ru.py)",
+      "Bash(python docs/build_docs.py --lang en --lang ru)",
+      "Bash(pip install *)",
+      "Bash(python _verify_ru2.py)"
+    ],
+    "additionalDirectories": [
+      "g:\\Diploma\\server"
+    ]
+  }
+}

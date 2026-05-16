@@ -1,0 +1,9 @@
+{
+  "_comment": "Sample targets file. Replace with the IPs/hostnames you are authorized to test in your lab. Public networks must never be added here.",
+  "targets": [
+    "10.10.10.5",
+    "10.10.10.0/24",
+    "http://lab.local",
+    "vulnbox.lab"
+  ]
+}
