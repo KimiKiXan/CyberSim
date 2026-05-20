@@ -1,4 +1,4 @@
-"""PyQt6 desktop client for CyberSim.
+"""PyQt5 desktop client for CyberSim.
 
 The ``main_window`` import is deferred so that ``client.api_client`` can be
 used from non-Qt contexts (e.g. tests / scripts).

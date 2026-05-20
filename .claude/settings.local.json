@@ -18,7 +18,23 @@
       "Bash(python _verify_ru.py)",
       "Bash(python docs/build_docs.py --lang en --lang ru)",
       "Bash(pip install *)",
-      "Bash(python _verify_ru2.py)"
+      "Bash(python _verify_ru2.py)",
+      "Bash(.venv/Scripts/python.exe docs/build_docs.py --lang en --lang ru)",
+      "Bash(.venv/Scripts/python.exe -m pip install reportlab python-docx pypdf)",
+      "Bash(.venv/Scripts/python.exe -m pip install -r requirements.txt)",
+      "Bash(.venv/Scripts/python.exe -c \"import client.api_client, client.async_runner, client.widgets, client.widgets.dashboard, client.widgets.terminal_view, client.widgets.session_panel, client.widgets.targets_panel, client.widgets.report_panel, client.main_window; print\\('client modules: OK'\\)\")",
+      "Bash(.venv/Scripts/python.exe _ui_smoke.py)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(curl -s http://127.0.0.1:11434/api/tags)",
+      "Bash(ipconfig)",
+      "Bash(.venv/Scripts/python.exe run_server.py)",
+      "Bash(curl -s http://26.26.97.36:4899/health)",
+      "Bash(curl -s -X POST http://26.26.97.36:4899/api/llm/chat -H \"Content-Type: application/json\" -d \"{\\\\\"messages\\\\\":[{\\\\\"role\\\\\":\\\\\"user\\\\\",\\\\\"content\\\\\":\\\\\"Reply with exactly one word: PONG\\\\\"}],\\\\\"json_mode\\\\\":false}\")",
+      "Bash(curl -s http://26.26.97.36:4899/api/sessions)",
+      "Bash(curl -s http://26.26.97.36:4899/api/sessions/aee6ab0548d7)",
+      "PowerShell($path = \"G:\\\\Diploma\\\\scripts\\\\install_pentest_tools.ps1\"; $content = Get-Content $path -Raw -Encoding UTF8; [System.IO.File]::WriteAllText\\($path, $content, [System.Text.UTF8Encoding]::new\\($true\\)\\); Write-Host \"Rewrote with UTF-8 BOM\"; $bytes = [System.IO.File]::ReadAllBytes\\($path\\)[0..2]; Write-Host \"First 3 bytes: $\\([BitConverter]::ToString\\($bytes\\)\\)\")",
+      "PowerShell($errors = $null; $null = [System.Management.Automation.PSParser]::Tokenize\\(\\(Get-Content \"G:\\\\Diploma\\\\scripts\\\\install_pentest_tools.ps1\" -Raw\\), [ref]$errors\\); if \\($errors\\) { Write-Host \"ERRORS:\"; $errors | ForEach-Object { Write-Host \"  $\\($_.Message\\) at line $\\($_.Token.StartLine\\)\" } } else { Write-Host \"Parses OK\" -ForegroundColor Green })",
+      "PowerShell($path = \"G:\\\\Diploma\\\\scripts\\\\install_pentest_tools.ps1\"; $content = Get-Content $path -Raw -Encoding UTF8; [System.IO.File]::WriteAllText\\($path, $content, [System.Text.UTF8Encoding]::new\\($true\\)\\); $errors = $null; $null = [System.Management.Automation.PSParser]::Tokenize\\($content, [ref]$errors\\); if \\($errors\\) { Write-Host \"ERRORS:\" -ForegroundColor Red; $errors | ForEach-Object { Write-Host \"  Line $\\($_.Token.StartLine\\): $\\($_.Message\\)\" } } else { Write-Host \"BOM written, parses OK\" -ForegroundColor Green })"
     ],
     "additionalDirectories": [
       "g:\\Diploma\\server"

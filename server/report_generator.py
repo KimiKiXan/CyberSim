@@ -243,7 +243,7 @@ class ReportGenerator:
         lines.append(f"- **Generated:** {datetime.now(timezone.utc).isoformat()}")
         lines.append(f"- **Started:** {data.started_at}")
         lines.append(f"- **Finished:** {data.finished_at}")
-        lines.append(f"- **Model:** {data.metrics.get('model') or 'granite3.1-dense:latest'}")
+        lines.append(f"- **Model:** {data.metrics.get('model') or 'qwen2.5:14b-instruct-q5_K_M'}")
         lines.append("")
         lines.append("## Objective")
         lines.append("")

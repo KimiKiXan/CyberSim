@@ -1,4 +1,4 @@
-"""OllamaManager — async gateway for the local Granite model.
+"""OllamaManager — async gateway for the local Ollama-hosted LLM.
 
 Provides:
   * Health check / model auto-pull
@@ -52,7 +52,7 @@ class OllamaError(RuntimeError):
 
 
 class OllamaManager:
-    """Async wrapper around the Ollama HTTP API tuned for the Granite ReAct agent."""
+    """Async wrapper around the Ollama HTTP API used by the ReAct agent."""
 
     def __init__(self, cfg: OllamaConfig | None = None) -> None:
         self.cfg = cfg or CONFIG.ollama

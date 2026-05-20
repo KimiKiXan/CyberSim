@@ -1,4 +1,4 @@
-"""Reusable widgets for the CyberSim PyQt6 client."""
+"""Reusable widgets for the CyberSim PyQt5 client."""
 from .terminal_view import TerminalView
 from .targets_panel import TargetsPanel
 from .dashboard import Dashboard

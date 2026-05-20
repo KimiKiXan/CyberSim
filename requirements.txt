@@ -13,17 +13,27 @@ httpx>=0.27.0
 # --- LLM (Ollama client) ---
 ollama>=0.4.0
 
-# --- Pentest tools ---
-python-nmap>=0.7.1
-requests>=2.32.0
-beautifulsoup4>=4.12.0
-lxml>=5.3.0
-python-libnmap>=0.7.3
+# --- Pentest tool Python wrappers / helpers ---
+# (NOTE: native CLIs nmap / gobuster / nuclei / hydra / msfrpcd are NOT
+#  installable via pip — see scripts/install_pentest_tools.ps1 or the README.)
+python-nmap>=0.7.1       # parsing helpers for the `nmap_scan` tool
+python-libnmap>=0.7.3    # alternative nmap XML parser
+requests>=2.32.0         # used by HTTP helpers across the registry
+beautifulsoup4>=4.12.0   # web_analyze: DOM parsing
+lxml>=5.3.0              # web_analyze: fast HTML/XML backend
+sqlmap>=1.8              # `sqlmap_audit` tool — provides the `sqlmap` CLI
+dirsearch>=0.4.3         # `dir_brute` fallback (used when gobuster missing)
+pymetasploit3>=1.0.6     # `msf_exploit` tool — RPC client (needs msfrpcd)
+paramiko>=3.4.0          # `post_exploit_enum` remote SSH mode
 
 # --- Frontend / Client ---
-PyQt6>=6.7.0
+PyQt5>=5.15.10
 QtAwesome>=1.3.1
-pyqtdarktheme>=2.1.0
+# Optional: a dark Fusion-style theme on top of the bundled QSS.
+# `pyqtdarktheme` only ships wheels up to Python 3.11; on 3.12+ use the
+# `pyqtdarktheme-fork` package. Both work with PyQt5.
+# pyqtdarktheme-fork>=2.3.0  ; python_version >= "3.12"
+# pyqtdarktheme>=2.1.0       ; python_version <  "3.12"
 
 # --- Reporting / Documentation ---
 reportlab>=4.2.0

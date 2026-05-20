@@ -1,4 +1,4 @@
-"""Thin HTTP + WebSocket client used by the PyQt6 UI."""
+"""Thin HTTP + WebSocket client used by the PyQt5 UI."""
 from __future__ import annotations
 
 import asyncio
@@ -13,8 +13,10 @@ import websockets
 
 @dataclass
 class ServerEndpoint:
-    host: str = "127.0.0.1"
-    port: int = 8765
+    # Default endpoint matches the operator's VPN-assigned host.
+    # Override per-instance or via CYBERSIM_HOST / CYBERSIM_PORT.
+    host: str = "26.26.97.36"
+    port: int = 4899
 
     @property
     def http_base(self) -> str:
@@ -28,8 +30,8 @@ class ServerEndpoint:
 class CyberSimClient:
     def __init__(self, endpoint: ServerEndpoint | None = None) -> None:
         self.endpoint = endpoint or ServerEndpoint(
-            host=os.getenv("CYBERSIM_HOST", "127.0.0.1"),
-            port=int(os.getenv("CYBERSIM_PORT", "8765")),
+            host=os.getenv("CYBERSIM_HOST", "26.26.97.36"),
+            port=int(os.getenv("CYBERSIM_PORT", "4899")),
         )
 
     # ---------------------------------------------------------------- HTTP API

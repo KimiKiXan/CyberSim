@@ -4,9 +4,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
-from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QLabel
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
+from PyQt5.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QLabel
 
 
 _COLOR_MAP = {
@@ -46,7 +46,7 @@ class TerminalView(QWidget):
         self.view.setReadOnly(True)
         self.view.setMaximumBlockCount(20000)
         font = QFont("Consolas")
-        font.setStyleHint(QFont.StyleHint.Monospace)
+        font.setStyleHint(QFont.Monospace)
         font.setPointSize(10)
         self.view.setFont(font)
         self.view.setStyleSheet(
@@ -118,7 +118,7 @@ class TerminalView(QWidget):
 
     def _write(self, text: str, *, color: str = "#e5e7eb", bold: bool = False) -> None:
         cur = self.view.textCursor()
-        cur.movePosition(QTextCursor.MoveOperation.End)
+        cur.movePosition(QTextCursor.End)
         fmt = QTextCharFormat()
         fmt.setForeground(QColor(color))
         font = self.view.font()

@@ -1,15 +1,16 @@
-"""Top-level CyberSim PyQt6 window."""
+"""Top-level CyberSim PyQt5 window."""
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 from typing import Any
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QAction, QIcon
-from PyQt6.QtWidgets import (
-    QApplication, QFileDialog, QLabel, QMainWindow, QMessageBox, QPushButton,
-    QSplitter, QStatusBar, QTabWidget, QToolBar, QVBoxLayout, QWidget,
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (
+    QAction, QApplication, QFileDialog, QLabel, QMainWindow, QMessageBox,
+    QPushButton, QSplitter, QStatusBar, QTabWidget, QToolBar, QVBoxLayout,
+    QWidget,
 )
 
 from .api_client import CyberSimClient, ServerEndpoint
@@ -69,7 +70,7 @@ class MainWindow(QMainWindow):
         self.report_panel = ReportPanel()
 
         # left = dashboard, right tabs = terminal / sessions / reports
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.dashboard)
         right_tabs = QTabWidget()
         right_tabs.addTab(self.terminal, "Live Terminal")
@@ -308,7 +309,7 @@ def launch() -> None:
         pass
     win = MainWindow()
     win.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec_())
 
 
 if __name__ == "__main__":

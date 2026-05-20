@@ -6,8 +6,8 @@ import io
 import json
 from pathlib import Path
 
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import (
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import (
     QFileDialog, QHBoxLayout, QLabel, QLineEdit, QListWidget,
     QPushButton, QVBoxLayout, QWidget, QMessageBox,
 )

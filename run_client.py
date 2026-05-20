@@ -1,4 +1,4 @@
-"""Entry point — launches the PyQt6 desktop client."""
+"""Entry point — launches the PyQt5 desktop client."""
 from __future__ import annotations
 
 import sys

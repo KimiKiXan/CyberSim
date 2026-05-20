@@ -4,8 +4,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Callable
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (
     QFileDialog, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLabel,
     QLineEdit, QListWidget, QPushButton, QSizePolicy, QTextEdit,
     QVBoxLayout, QWidget,

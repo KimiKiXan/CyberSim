@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import (
     QAbstractItemView, QHBoxLayout, QHeaderView, QLabel, QPushButton,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
@@ -31,13 +31,13 @@ class SessionPanel(QWidget):
 
         self.table = QTableWidget(0, 5, self)
         self.table.setHorizontalHeaderLabels(["ID", "State", "Objective", "Targets", "Iter."])
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setStyleSheet(
             "QTableWidget { background-color:#0f172a; color:#e5e7eb; gridline-color:#1f2937;"
             " border:1px solid #1f2937; border-radius:6px; }"
@@ -80,7 +80,7 @@ class SessionPanel(QWidget):
             self.table.insertRow(row)
             self.table.setItem(row, 0, QTableWidgetItem(s.get("session_id", "")))
             state_item = QTableWidgetItem(s.get("state", ""))
-            state_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            state_item.setTextAlignment(Qt.AlignCenter)
             self.table.setItem(row, 1, state_item)
             self.table.setItem(row, 2, QTableWidgetItem(s.get("objective", "")))
             self.table.setItem(row, 3, QTableWidgetItem(", ".join(s.get("targets", []))))

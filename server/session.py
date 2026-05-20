@@ -27,7 +27,7 @@ class AttackSession:
     tool_results: list[ToolResult] = field(default_factory=list)
     final_report: str | None = None
     metrics: dict[str, Any] = field(default_factory=dict)
-    model: str = "granite3.1-dense:latest"
+    model: str = "qwen2.5:14b-instruct-q5_K_M"
 
     _event_log: list[AgentEvent] = field(default_factory=list, repr=False)
     _subscribers: list[asyncio.Queue[AgentEvent]] = field(default_factory=list, repr=False)

@@ -11,25 +11,32 @@ ROOT = Path(__file__).resolve().parent.parent
 @dataclass
 class OllamaConfig:
     host: str = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-    model: str = os.getenv("OLLAMA_MODEL", "granite3.1-dense:latest")
-    fallback_model: str = os.getenv("OLLAMA_FALLBACK_MODEL", "granite3.1-dense:8b")
-    temperature: float = float(os.getenv("OLLAMA_TEMPERATURE", "0.2"))
+    # Default tuned for an RTX 4080 Super (16 GB VRAM): Qwen 2.5 14B Instruct.
+    # The bare `qwen2.5:14b` Ollama tag resolves to the instruct Q4_K_M build
+    # (~9 GB) — fits entirely on-GPU and is what `ollama pull qwen2.5:14b`
+    # downloads by default.
+    model: str = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
+    fallback_model: str = os.getenv("OLLAMA_FALLBACK_MODEL", "qwen2.5:7b")
+    temperature: float = float(os.getenv("OLLAMA_TEMPERATURE", "0.1"))
     top_p: float = float(os.getenv("OLLAMA_TOP_P", "0.9"))
-    num_ctx: int = int(os.getenv("OLLAMA_NUM_CTX", "8192"))
+    num_ctx: int = int(os.getenv("OLLAMA_NUM_CTX", "16384"))
     request_timeout: float = float(os.getenv("OLLAMA_TIMEOUT", "180.0"))
-    keep_alive: str = os.getenv("OLLAMA_KEEP_ALIVE", "30m")
+    keep_alive: str = os.getenv("OLLAMA_KEEP_ALIVE", "60m")
 
 
 @dataclass
 class ServerConfig:
-    host: str = os.getenv("CYBERSIM_HOST", "127.0.0.1")
-    port: int = int(os.getenv("CYBERSIM_PORT", "8765"))
+    # The server binds on this address and the client connects to it. Default
+    # is the operator's VPN-assigned host so multiple lab machines can reach
+    # the same backend; override with CYBERSIM_HOST / CYBERSIM_PORT.
+    host: str = os.getenv("CYBERSIM_HOST", "26.26.97.36")
+    port: int = int(os.getenv("CYBERSIM_PORT", "4899"))
     reload: bool = os.getenv("CYBERSIM_RELOAD", "false").lower() == "true"
 
 
 @dataclass
 class AgentConfig:
-    max_iterations: int = int(os.getenv("AGENT_MAX_ITERATIONS", "25"))
+    max_iterations: int = int(os.getenv("AGENT_MAX_ITERATIONS", "40"))
     react_pause_seconds: float = float(os.getenv("AGENT_REACT_PAUSE", "0.0"))
     enable_self_debug: bool = True
     json_retry_limit: int = 3

@@ -31,14 +31,15 @@
 
 ## 1. Overview
 
-CyberSim is a high-performance research framework that places a local Granite
-large language model in the role of an autonomous offensive-security operator.
+CyberSim is a high-performance research framework that places a local
+large language model (Qwen 2.5 14B by default) in the role of an autonomous
+offensive-security operator.
 The model reasons under a strict ReAct (Reason → Act → Observe) discipline,
 chooses a tool from a curated registry, watches the streamed stdout/stderr of
 the spawned subprocess, and adapts its next step accordingly. Every action is
 gated by a sandbox guard that enforces an operator-supplied target allow-list.
 
-A FastAPI / WebSocket backend hosts the agent and the tools. A PyQt6 desktop
+A FastAPI / WebSocket backend hosts the agent and the tools. A PyQt5 desktop
 client (Windows-native, dark theme) provides a live operator console with a
 streaming terminal, a target manager with JSON/CSV import-export, a file
 upload dashboard, and a multi-format report builder (Markdown, PDF, JSON).
@@ -63,7 +64,7 @@ The sandbox refuses to act on any target that is not explicitly authorized.
 
 ```
 +----------------------------------+      +-----------------------------------+
-|         PyQt6 Client             |  WS  |          FastAPI Backend          |
+|         PyQt5 Client             |  WS  |          FastAPI Backend          |
 |  - Dashboard / targets / uploads | <==> |  - SessionManager                 |
 |  - Live terminal (stdout/stderr) |  HTTP|  - OllamaManager                  |
 |  - Report preview / export       | <==> |  - ReActAgent (reasoning loop)    |
@@ -82,7 +83,7 @@ The sandbox refuses to act on any target that is not explicitly authorized.
 | Path                       | Responsibility                                                  |
 |----------------------------|-----------------------------------------------------------------|
 | `server/`                  | FastAPI app, session manager, REST + WebSocket router, reports  |
-| `client/`                  | PyQt6 desktop application                                        |
+| `client/`                  | PyQt5 desktop application                                        |
 | `client/widgets/`          | Dashboard, terminal, targets panel, session panel, report panel |
 | `agent_logic/`             | OllamaManager (LLM gateway) and ReActAgent (reasoning loop)     |
 | `tools/`                   | Base classes, registry, sandbox guard, and 8 tool wrappers      |
@@ -100,14 +101,14 @@ The sandbox refuses to act on any target that is not explicitly authorized.
 
 - Windows 11 Pro (primary supported platform).
 - Windows 10 (works, untested in diploma demos).
-- Linux distributions with Python 3.13 and Qt 6 (works, untested).
+- Linux distributions with Python 3.13 and Qt 5 (works, untested).
 
 ### Software
 
 | Component       | Version            | Purpose                                |
 |-----------------|--------------------|----------------------------------------|
 | Python          | 3.13+              | Runtime                                |
-| Ollama          | latest             | Hosts the Granite LLM                  |
+| Ollama          | latest             | Hosts the local LLM                    |
 | Nmap            | 7.94+              | Network reconnaissance                 |
 | Gobuster        | 3.6+ (or dirsearch)| Directory brute forcing                |
 | Nuclei          | 3.2+               | Vulnerability scanning                 |
@@ -117,8 +118,11 @@ The sandbox refuses to act on any target that is not explicitly authorized.
 
 ### Hardware
 
-- 16 GB RAM recommended (Granite uses ~6-8 GB).
-- 20 GB free disk space for the Granite model and intermediate data.
+- 16 GB RAM (CPU-only path; Qwen 2.5 7B fallback uses ~6 GB).
+- For GPU inference: NVIDIA card with 12 GB+ VRAM. An RTX 4080 Super
+  (16 GB) is the reference hardware — it runs Qwen 2.5 14B Q5_K_M fully
+  on-GPU at ~50 tokens/sec.
+- 20 GB free disk space for the model and intermediate data.
 - A discrete GPU is optional but accelerates LLM inference dramatically.
 
 ### Network
@@ -150,11 +154,19 @@ ollama serve
 
 (In normal Windows installs the daemon starts automatically on login.)
 
-Pull the Granite model:
+Pull the default model (tuned for an RTX 4080 Super, 16 GB VRAM):
 
 ```powershell
-ollama pull granite3.1-dense:latest
+ollama pull qwen2.5:14b-instruct-q5_K_M
 ```
+
+Smaller CPU-friendly fallback:
+
+```powershell
+ollama pull qwen2.5:7b-instruct
+```
+
+CyberSim will auto-pull on first launch if neither tag is present locally.
 
 Verify:
 
@@ -162,24 +174,46 @@ Verify:
 ollama list
 ```
 
-### 4.3 Install Pentest CLIs
+### 4.3 Install Pentest Tools
 
-The following must be discoverable on PATH for the corresponding tool to be
-usable. CyberSim degrades gracefully (returns `NOT_INSTALLED`) if any binary
-is missing, so you can install only the subset you need.
+CyberSim's eight tools split into two install paths:
 
-| Tool         | Windows install hint                                   |
-|--------------|--------------------------------------------------------|
-| nmap         | <https://nmap.org/download.html>                       |
-| gobuster     | <https://github.com/OJ/gobuster/releases>              |
-| dirsearch    | `pip install dirsearch` (used if gobuster missing)     |
-| nuclei       | <https://github.com/projectdiscovery/nuclei/releases>  |
-| sqlmap       | `pip install sqlmap` or clone the repository           |
-| hydra        | Ship from a Kali WSL distro or build with cygwin       |
-| metasploit   | <https://www.metasploit.com/download>                  |
+| Type            | Tools                                          | How                                          |
+|-----------------|-----------------------------------------------|----------------------------------------------|
+| **Python pip**  | `sqlmap`, `dirsearch`, `pymetasploit3`, `paramiko`, `python-nmap`, `python-libnmap`, `beautifulsoup4`, `lxml` | `pip install -r requirements.txt` (next step) |
+| **Native CLI**  | `nmap`, `nuclei`, `gobuster`, `hydra`         | system installer (see below)                 |
 
-If you run CyberSim from a WSL or Kali side-car, you can expose the binaries
-through PATH.
+CyberSim degrades gracefully — a missing native binary just makes that one
+tool report `not_installed` to the agent.
+
+#### Automatic native installer (Windows)
+
+A one-shot PowerShell script is shipped under
+[`scripts/install_pentest_tools.ps1`](../scripts/install_pentest_tools.ps1).
+Run it in an **elevated** PowerShell:
+
+```powershell
+.\scripts\install_pentest_tools.ps1
+```
+
+It installs Chocolatey if needed, then `nmap`, `nuclei`, and `gobuster`,
+and prints a diagnostic table of which CLIs are now visible on PATH.
+
+You can also install a subset:
+
+```powershell
+.\scripts\install_pentest_tools.ps1 -Only nmap,nuclei
+```
+
+#### Manual install (per-tool)
+
+| Tool         | Windows install hint                                            |
+|--------------|------------------------------------------------------------------|
+| nmap         | `choco install nmap` or <https://nmap.org/download.html>         |
+| gobuster     | `choco install gobuster` or <https://github.com/OJ/gobuster/releases> |
+| nuclei       | `choco install nuclei` or <https://github.com/projectdiscovery/nuclei/releases> |
+| hydra        | Install via WSL (Kali): `sudo apt install hydra` (no native Choco package) |
+| metasploit   | <https://www.metasploit.com/download> (msfrpcd is bundled)        |
 
 ### 4.4 Clone the Project and Install Python Dependencies
 
@@ -191,13 +225,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Optional extras:
+That single command installs:
 
-```powershell
-pip install pymetasploit3   # enables msf_exploit tool
-pip install paramiko        # enables remote SSH post-exploit mode
-pip install python-docx     # used by the documentation generator
-```
+* The web stack (`fastapi`, `uvicorn`, `httpx`, `websockets`, …).
+* The LLM client (`ollama`).
+* The PyQt5 desktop client + dark-theme helpers.
+* The **eight pentest tool Python helpers** (`sqlmap`, `dirsearch`,
+  `pymetasploit3`, `paramiko`, `python-nmap`, `python-libnmap`,
+  `beautifulsoup4`, `lxml`).
+* The reporting stack (`reportlab`, `python-docx`, `markdown`, `jinja2`).
 
 ### 4.5 Confirm the Installation
 
@@ -215,30 +251,31 @@ export the variables in your shell.
 
 ### 5.1 Ollama Settings
 
-| Variable                | Default                       | Description                                |
-|-------------------------|-------------------------------|--------------------------------------------|
-| `OLLAMA_HOST`           | `http://127.0.0.1:11434`      | Ollama HTTP endpoint                       |
-| `OLLAMA_MODEL`          | `granite3.1-dense:latest`     | Primary Granite tag                        |
-| `OLLAMA_FALLBACK_MODEL` | `granite3.1-dense:8b`         | Fallback if primary tag is missing locally |
-| `OLLAMA_TEMPERATURE`    | `0.2`                         | Sampling temperature                       |
-| `OLLAMA_TOP_P`          | `0.9`                         | Nucleus sampling parameter                 |
-| `OLLAMA_NUM_CTX`        | `8192`                        | Context window in tokens                   |
-| `OLLAMA_TIMEOUT`        | `180`                         | Request timeout in seconds                 |
-| `OLLAMA_KEEP_ALIVE`     | `30m`                         | How long Ollama keeps the model resident   |
+| Variable                  | Default                            | Description                                  |
+|---------------------------|------------------------------------|----------------------------------------------|
+| `OLLAMA_HOST`             | `http://127.0.0.1:11434`           | Ollama HTTP endpoint                         |
+| `OLLAMA_MODEL`            | `qwen2.5:14b-instruct-q5_K_M`      | Primary LLM tag (Qwen 2.5 14B Instruct)      |
+| `OLLAMA_FALLBACK_MODEL`   | `qwen2.5:7b-instruct`              | Fallback when the primary tag is missing     |
+| `OLLAMA_TEMPERATURE`      | `0.1`                              | Sampling temperature (low = strict JSON)     |
+| `OLLAMA_TOP_P`            | `0.9`                              | Nucleus sampling parameter                   |
+| `OLLAMA_NUM_CTX`          | `16384`                            | Context window in tokens                     |
+| `OLLAMA_TIMEOUT`          | `180`                              | Request timeout in seconds                   |
+| `OLLAMA_KEEP_ALIVE`       | `60m`                              | How long Ollama keeps the model resident     |
+| `OLLAMA_FLASH_ATTENTION`  | `1`                                | Enables Flash-Attention on supported GPUs    |
 
 ### 5.2 Server Settings
 
 | Variable             | Default        | Description                                    |
 |----------------------|----------------|------------------------------------------------|
-| `CYBERSIM_HOST`      | `127.0.0.1`    | FastAPI bind address                           |
-| `CYBERSIM_PORT`      | `8765`         | FastAPI bind port                              |
+| `CYBERSIM_HOST`      | `26.26.97.36`  | FastAPI bind address (operator VPN host)        |
+| `CYBERSIM_PORT`      | `4899`         | FastAPI bind port                              |
 | `CYBERSIM_RELOAD`    | `false`        | Set `true` to enable Uvicorn auto-reload        |
 
 ### 5.3 Agent Settings
 
 | Variable                  | Default | Description                                        |
 |---------------------------|---------|----------------------------------------------------|
-| `AGENT_MAX_ITERATIONS`    | `25`    | Hard cap on ReAct iterations per session           |
+| `AGENT_MAX_ITERATIONS`    | `40`    | Hard cap on ReAct iterations per session           |
 | `AGENT_REACT_PAUSE`       | `0.0`   | Optional sleep between iterations (debug aid)      |
 
 ### 5.4 Metasploit RPC Settings (optional)
@@ -263,6 +300,27 @@ The agent's identity, mission, and safety rails are defined in
 `config/system_prompt.md`. Edit the file and restart the server to take
 effect — no code change required.
 
+### 5.6 Recommended Models per Hardware
+
+The default `qwen2.5:14b-instruct-q5_K_M` is sized for an RTX 4080 Super
+(16 GB VRAM). Pick a different tag if your hardware differs:
+
+| Hardware                     | Recommended `OLLAMA_MODEL`                  | VRAM  | Tokens/s   |
+|------------------------------|---------------------------------------------|-------|------------|
+| RTX 4080 Super / 4090 (16-24 GB) | `qwen2.5:14b-instruct-q5_K_M` *(default)* | ~10 GB| 45-65 t/s  |
+| RTX 4090 / A6000 (24+ GB)        | `qwen2.5:32b-instruct-q4_K_S`             | ~19 GB| 18-25 t/s  |
+| RTX 4060 / 4070 (8-12 GB)        | `qwen2.5:14b-instruct-q4_K_M`             | ~8 GB | 25-40 t/s  |
+| CPU only / no GPU                | `qwen2.5:7b-instruct`                     | RAM   | 8-15 t/s   |
+| Diploma fixed to IBM Granite     | `granite3.2-dense:8b`                     | ~8 GB | 25-50 t/s  |
+
+Switching is a one-liner:
+
+```powershell
+$env:OLLAMA_MODEL = "qwen2.5:32b-instruct-q4_K_S"
+```
+
+The system prompt is model-agnostic, so no other change is needed.
+
 ---
 
 ## 6. Starting the Stack
@@ -271,7 +329,7 @@ effect — no code change required.
 
 ```powershell
 ollama serve            # if not already running as a service
-ollama list             # confirm granite3.1-dense:latest is present
+ollama list             # confirm qwen2.5:14b-instruct-q5_K_M is present
 ```
 
 ### 6.2 Start the Backend Server
@@ -283,17 +341,17 @@ ollama list             # confirm granite3.1-dense:latest is present
 You should see:
 
 ```
-INFO  CyberSim server ready on http://127.0.0.1:11434 using model=granite3.1-dense:latest
-INFO  Uvicorn running on http://127.0.0.1:8765
+INFO  CyberSim server ready on http://127.0.0.1:11434 using model=qwen2.5:14b-instruct-q5_K_M
+INFO  Uvicorn running on http://26.26.97.36:4899
 ```
 
 A quick health check:
 
 ```powershell
-curl http://127.0.0.1:8765/health
+curl http://26.26.97.36:4899/health
 ```
 
-### 6.3 Start the PyQt6 Client
+### 6.3 Start the PyQt5 Client
 
 In a second terminal:
 
@@ -307,12 +365,13 @@ The CyberSim window opens. If the status bar shows "server: OK" you are ready.
 
 ## 7. Connecting the Client to the Server
 
-By default the client looks for the server on `127.0.0.1:8765`. To target a
-remote server, export environment variables before launching the client:
+By default the client looks for the server on `26.26.97.36:4899` — the
+operator's VPN-assigned host (Radmin / Hamachi-style 26.x.x.x). To target a
+different server, export environment variables before launching the client:
 
 ```powershell
-$env:CYBERSIM_HOST = "10.10.10.20"
-$env:CYBERSIM_PORT = "8765"
+$env:CYBERSIM_HOST = "26.26.97.36"
+$env:CYBERSIM_PORT = "4899"
 .\run_client.bat
 ```
 
@@ -320,17 +379,17 @@ The client uses HTTP for control plane traffic (start session, list reports,
 upload files, etc.) and a WebSocket for the live event stream:
 
 ```
-HTTP  : http://10.10.10.20:8765/api/...
-WS    : ws://10.10.10.20:8765/ws/sessions/<session-id>
+HTTP  : http://26.26.97.36:4899/api/...
+WS    : ws://26.26.97.36:4899/ws/sessions/<session-id>
 ```
 
 ### Connectivity Troubleshooting
 
-1. Visit `http://<host>:8765/health` in a browser — you should see JSON.
-2. Open Windows Defender Firewall and allow inbound TCP 8765.
+1. Visit `http://<host>:4899/health` in a browser — you should see JSON.
+2. Open Windows Defender Firewall and allow inbound TCP 4899.
 3. If the client reports "server unreachable", check the server log for a
    crash; the most common cause is Ollama being unreachable.
-4. Use `netstat -an | findstr 8765` to confirm the server is listening.
+4. Use `netstat -an | findstr 4899` to confirm the server is listening.
 
 ---
 
@@ -401,6 +460,19 @@ In the **Report** tab choose a format (Markdown, PDF, or JSON), press
 
 All tools share a common JSON-schema-style parameter contract. The LLM sees
 the full catalog at the start of every session.
+
+### 9.0 Tool inventory — at a glance
+
+| Tool                  | Backend                                | Install path                                |
+|-----------------------|----------------------------------------|---------------------------------------------|
+| `nmap_scan`           | `nmap` CLI                             | `choco install nmap` (or installer)         |
+| `dir_brute`           | `gobuster` CLI / `dirsearch` pkg       | `choco install gobuster` / `pip install dirsearch` |
+| `vuln_scan`           | `nuclei` CLI                           | `choco install nuclei`                      |
+| `sqlmap_audit`        | `sqlmap` (Python pkg, CLI entry-point) | `pip install sqlmap` (in `requirements.txt`)|
+| `auth_bruteforce`     | `hydra` CLI                            | WSL / Kali / cygwin                         |
+| `web_analyze`         | `httpx + bs4 + lxml` (pure Python)     | `pip install -r requirements.txt`           |
+| `msf_exploit`         | `pymetasploit3` → `msfrpcd`            | pip + Metasploit Framework installer        |
+| `post_exploit_enum`   | local subprocess / `paramiko` SSH      | `pip install -r requirements.txt`           |
 
 ### 9.1 `nmap_scan` — Network Reconnaissance
 
@@ -663,7 +735,7 @@ The report generator (`server.report_generator.ReportGenerator`) produces:
 | Tool returns `BLOCKED`                        | Target not in the allow-list. Add it to the Targets panel.                                 |
 | Hydra reports "no password list provided"     | Install SecLists or supply `pass_list` explicitly.                                          |
 | msf_exploit returns `NOT_INSTALLED`           | `msfrpcd` is not running, or `MSFRPC_PASSWORD` is unset, or `pymetasploit3` is missing.    |
-| Client crashes with "No module named PyQt6"   | Activate `.venv` and run `pip install -r requirements.txt`.                                 |
+| Client crashes with "No module named PyQt5"   | Activate `.venv` and run `pip install -r requirements.txt`.                                 |
 | ReAct loop never finishes                     | Increase `AGENT_MAX_ITERATIONS`, or refine the objective so the model has clearer success conditions. |
 
 ---
@@ -686,7 +758,10 @@ fall on the operator:
 
 **Q. Can I use a different LLM?**
 A. Yes. Set `OLLAMA_MODEL` to any other Ollama-hosted tool-capable model. The
-ReAct protocol is model-agnostic; we recommend Granite for the diploma demo.
+ReAct protocol is model-agnostic. Out of the box CyberSim ships with
+`qwen2.5:14b-instruct-q5_K_M` (best balance for an RTX 4080 Super, 16 GB
+VRAM) and `qwen2.5:7b-instruct` as a CPU-friendly fallback. Other proven
+options: `llama3.1:8b`, `mistral-nemo:12b`, `granite3.2-dense:8b`.
 
 **Q. Can I add a new tool?**
 A. Yes. Create a subclass of `BaseTool`, declare a `ToolSchema`, implement
@@ -723,7 +798,7 @@ it includes every emitted event.
 - **msfrpcd** — Metasploit's RPC daemon, enabling remote control of the
   framework via MessagePack RPC.
 - **WebSocket telemetry** — the low-latency channel from the FastAPI backend
-  to the PyQt6 client.
+  to the PyQt5 client.
 
 ---
 

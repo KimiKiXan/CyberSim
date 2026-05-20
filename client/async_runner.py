@@ -1,4 +1,4 @@
-"""Helpers to run asyncio coroutines from PyQt6 widgets."""
+"""Helpers to run asyncio coroutines from PyQt5 widgets."""
 from __future__ import annotations
 
 import asyncio
@@ -6,7 +6,7 @@ import threading
 from concurrent.futures import Future
 from typing import Any, AsyncIterator, Callable, Coroutine, TypeVar
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
 T = TypeVar("T")
 

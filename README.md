@@ -2,10 +2,10 @@
 
 CyberSim is a high-performance research framework for studying **autonomous
 offensive-security agents** in a **sandboxed laboratory environment**. A local
-Granite LLM (served by Ollama) drives a **ReAct** loop, calling a curated set
+LLM (Qwen 2.5 14B by default, served by Ollama) drives a **ReAct** loop, calling a curated set
 of pentest tools (Nmap, Gobuster, Nuclei, SQLmap, Hydra, a custom DOM scraper,
 Metasploit RPC, and post-exploitation enumeration) against an operator-defined
-allow-list of targets. All telemetry streams over WebSockets to a PyQt6 desktop
+allow-list of targets. All telemetry streams over WebSockets to a PyQt5 desktop
 client that renders a live terminal, manages targets/uploads, and exports
 operator-grade reports (Markdown, PDF, JSON) with CVSS / success-rate metrics.
 
@@ -20,7 +20,7 @@ operator-grade reports (Markdown, PDF, JSON) with CVSS / success-rate metrics.
 
 ```
 ┌────────────────────────────────────────┐        ┌────────────────────────────┐
-│             PyQt6 Client               │  WS    │      FastAPI Backend       │
+│             PyQt5 Client               │  WS    │      FastAPI Backend       │
 │  • Dashboard / targets / uploads       │◀──────▶│  • SessionManager          │
 │  • Live terminal (stdout/stderr)       │  HTTP  │  • OllamaManager           │
 │  • Report preview / export             │        │  • ReActAgent              │
@@ -38,7 +38,7 @@ Module layout:
 
 ```
 server/          FastAPI app, WebSocket router, session manager, report generator
-client/          PyQt6 desktop app (dashboard, terminal, targets, reports)
+client/          PyQt5 desktop app (dashboard, terminal, targets, reports)
 agent_logic/     OllamaManager + ReAct loop
 tools/           Tool abstraction layer + 8 pentest wrappers + Sandbox guard
 config/          settings.py + system_prompt.md
@@ -55,12 +55,10 @@ data/            Sample target lists (JSON / CSV)
 
 * **Python 3.13+**
 * **Ollama** running locally — `ollama serve`
-  * Pull the model: `ollama pull granite3.1-dense:latest`
+  * Pull the default model (tuned for an RTX 4080 Super, 16 GB VRAM):
+    `ollama pull qwen2.5:14b`
+  * Smaller fallback (CPU-only friendly): `ollama pull qwen2.5:7b`
   * (CyberSim will also try to auto-pull on first run.)
-* Pentest CLIs on `PATH` for the tools you intend to use:
-  `nmap`, `gobuster` (or `dirsearch`), `nuclei`, `sqlmap`, `hydra`.
-* (Optional) `msfrpcd` for the Metasploit tool:
-  `msfrpcd -P <password> -S -a 127.0.0.1` and export `MSFRPC_PASSWORD`.
 
 ### 2. Create a virtualenv and install Python deps
 
@@ -70,13 +68,42 @@ py -3.13 -m venv .venv
 pip install -r requirements.txt
 ```
 
+This pulls in **all Python-side tool wrappers** (sqlmap, dirsearch,
+pymetasploit3, paramiko, python-nmap, beautifulsoup4, …) — so the
+`sqlmap_audit`, `dir_brute` (dirsearch path), `msf_exploit` and
+`post_exploit_enum` tools work out of the box.
+
+### 3. Install the native pentest CLIs
+
+The Nmap, Gobuster, Nuclei and Hydra binaries can **not** be installed
+via pip — they're standalone executables. Easiest way (run in an
+**elevated PowerShell**):
+
+```powershell
+.\scripts\install_pentest_tools.ps1
+```
+
+That bootstraps Chocolatey if needed and installs **nmap, gobuster,
+nuclei** in one go. The script also prints which CLIs are still missing.
+
+Hydra and Metasploit Framework require a separate install:
+
+| CLI / Service     | Install                                                       |
+|-------------------|---------------------------------------------------------------|
+| `hydra`           | WSL: `wsl --install kali-linux` then `sudo apt install hydra`  |
+| Metasploit / `msfrpcd` | <https://www.metasploit.com/download>                    |
+
+Tools whose binary is missing simply report `not_installed` to the
+agent — the rest of CyberSim keeps running.
+
 ### 3. Start the server
 
 ```powershell
 .\run_server.bat
 ```
 
-The FastAPI backend will listen on `http://127.0.0.1:8765`.
+The FastAPI backend will listen on `http://26.26.97.36:4899` (or whatever
+`CYBERSIM_HOST` / `CYBERSIM_PORT` you configured).
 
 ### 4. Start the client (in a second terminal)
 
@@ -102,14 +129,18 @@ The FastAPI backend will listen on `http://127.0.0.1:8765`.
 All settings can be overridden via environment variables — see `.env.example`.
 Highlights:
 
-| Variable                | Default                       | Purpose                                  |
-|-------------------------|-------------------------------|------------------------------------------|
-| `OLLAMA_HOST`           | `http://127.0.0.1:11434`      | Ollama server                            |
-| `OLLAMA_MODEL`          | `granite3.1-dense:latest`     | Primary Granite model                    |
-| `OLLAMA_FALLBACK_MODEL` | `granite3.1-dense:8b`         | Used if primary tag is missing locally   |
-| `CYBERSIM_HOST` / `_PORT` | `127.0.0.1` / `8765`        | FastAPI bind                             |
-| `AGENT_MAX_ITERATIONS`  | `25`                          | Maximum ReAct steps per session          |
-| `MSFRPC_PASSWORD`       | _(unset)_                     | Enables the Metasploit tool when set     |
+| Variable                  | Default                            | Purpose                                  |
+|---------------------------|------------------------------------|------------------------------------------|
+| `OLLAMA_HOST`             | `http://127.0.0.1:11434`           | Ollama server                            |
+| `OLLAMA_MODEL`            | `qwen2.5:14b-instruct-q5_K_M`      | Primary LLM (Qwen 2.5 14B on GPU)        |
+| `OLLAMA_FALLBACK_MODEL`   | `qwen2.5:7b-instruct`              | Used if primary tag is missing locally   |
+| `OLLAMA_NUM_CTX`          | `16384`                            | Context window (tokens)                  |
+| `OLLAMA_TEMPERATURE`      | `0.1`                              | Sampling temperature (low = strict JSON) |
+| `OLLAMA_KEEP_ALIVE`       | `60m`                              | How long the model stays resident        |
+| `OLLAMA_FLASH_ATTENTION`  | `1`                                | Enables Flash-Attention in Ollama        |
+| `CYBERSIM_HOST` / `_PORT` | `26.26.97.36` / `4899`             | FastAPI bind / client endpoint           |
+| `AGENT_MAX_ITERATIONS`    | `40`                               | Maximum ReAct steps per session          |
+| `MSFRPC_PASSWORD`         | _(unset)_                          | Enables the Metasploit tool when set     |
 
 The agent system prompt is editable in [`config/system_prompt.md`](config/system_prompt.md).
 
@@ -121,16 +152,16 @@ The agent sees the catalog described below. Every call is filtered by the
 **SandboxGuard** — a target field that isn't in the operator's allow-list is
 refused before the binary is ever spawned.
 
-| Tool name             | Wraps                  | Purpose                            |
-|-----------------------|------------------------|------------------------------------|
-| `nmap_scan`           | `nmap`                 | Network recon / service / NSE      |
-| `dir_brute`           | `gobuster` / `dirsearch` | Web path & file enumeration      |
-| `vuln_scan`           | `nuclei`               | Template-driven vulnerability scan |
-| `sqlmap_audit`        | `sqlmap`               | SQL injection auditing             |
-| `auth_bruteforce`     | `hydra`                | Protocol authentication brute      |
-| `web_analyze`         | `httpx + bs4` (pure-py)| DOM, headers, forms, secrets       |
-| `msf_exploit`         | `pymetasploit3` → msfrpcd | Confirmed-CVE exploitation       |
-| `post_exploit_enum`   | local / paramiko SSH   | Post-exploit enumeration sweep     |
+| Tool name             | Wraps                       | Install path                       | Purpose                            |
+|-----------------------|-----------------------------|------------------------------------|------------------------------------|
+| `nmap_scan`           | `nmap` CLI                  | `choco install nmap`               | Network recon / service / NSE      |
+| `dir_brute`           | `gobuster` or `dirsearch`   | `choco install gobuster` / pip     | Web path & file enumeration        |
+| `vuln_scan`           | `nuclei` CLI                | `choco install nuclei`             | Template-driven vulnerability scan |
+| `sqlmap_audit`        | `sqlmap`                    | `pip install sqlmap` (in `requirements.txt`) | SQL injection auditing  |
+| `auth_bruteforce`     | `hydra` CLI                 | WSL / Kali / cygwin                | Protocol authentication brute      |
+| `web_analyze`         | `httpx + bs4` (pure-py)     | `pip install -r requirements.txt`  | DOM, headers, forms, secrets       |
+| `msf_exploit`         | `pymetasploit3` → `msfrpcd` | pip + manual Metasploit installer  | Confirmed-CVE exploitation         |
+| `post_exploit_enum`   | local subprocess / `paramiko` SSH | `pip install -r requirements.txt` | Post-exploit enumeration sweep |
 
 Adding a new tool is three lines:
 
