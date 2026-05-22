@@ -39,9 +39,10 @@ class SessionPanel(QWidget):
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.setStyleSheet(
-            "QTableWidget { background-color:#0f172a; color:#e5e7eb; gridline-color:#1f2937;"
-            " border:1px solid #1f2937; border-radius:6px; }"
+            "QTableWidget { background-color:#ffffff; color:#0f172a; gridline-color:#e2e8f0;"
+            " border:1px solid #e2e8f0; border-radius:6px; }"
         )
+        self.table.setAlternatingRowColors(True)
         root.addWidget(self.table, stretch=1)
 
         actions = QHBoxLayout()

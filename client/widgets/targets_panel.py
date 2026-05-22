@@ -25,7 +25,7 @@ class TargetsPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.addWidget(QLabel("<b>Authorized Targets (Sandbox Allow-list)</b>"))
         root.addWidget(QLabel(
-            "<span style='color:#9ca3af'>Only hosts/IPs/CIDRs listed here may be "
+            "<span style='color:#64748b'>Only hosts/IPs/CIDRs listed here may be "
             "touched by tools. Entries can be IPs (10.0.0.5), CIDRs (10.0.0.0/24), "
             "URLs (http://target/), or hostnames (lab.local).</span>"
         ))
@@ -41,8 +41,8 @@ class TargetsPanel(QWidget):
 
         self.list = QListWidget(self)
         self.list.setStyleSheet(
-            "QListWidget { background-color:#0f172a; color:#e5e7eb; "
-            "border:1px solid #1f2937; border-radius:6px; }"
+            "QListWidget { background-color:#ffffff; color:#0f172a; "
+            "border:1px solid #e2e8f0; border-radius:6px; }"
         )
         root.addWidget(self.list, stretch=1)
 

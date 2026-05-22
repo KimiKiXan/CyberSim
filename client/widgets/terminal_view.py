@@ -10,17 +10,17 @@ from PyQt5.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QPushButton, Q
 
 
 _COLOR_MAP = {
-    "session_start": "#22d3ee",
-    "session_end":   "#22d3ee",
-    "llm_thought":   "#a78bfa",
-    "llm_raw":       "#6b7280",
-    "tool_call":     "#facc15",
-    "tool_stream":   "#e5e7eb",
-    "tool_result":   "#34d399",
-    "sandbox_block": "#f97316",
-    "agent_error":   "#f87171",
-    "final_answer":  "#60a5fa",
-    "metrics":       "#9ca3af",
+    "session_start": "#0e7490",  # cyan-700
+    "session_end":   "#0e7490",
+    "llm_thought":   "#7c3aed",  # violet-600
+    "llm_raw":       "#64748b",  # slate-500
+    "tool_call":     "#b45309",  # amber-700
+    "tool_stream":   "#0f172a",  # slate-900
+    "tool_result":   "#15803d",  # green-700
+    "sandbox_block": "#c2410c",  # orange-700
+    "agent_error":   "#b91c1c",  # red-700
+    "final_answer":  "#1d4ed8",  # blue-700
+    "metrics":       "#475569",  # slate-600
 }
 
 
@@ -50,14 +50,14 @@ class TerminalView(QWidget):
         font.setPointSize(10)
         self.view.setFont(font)
         self.view.setStyleSheet(
-            "QPlainTextEdit { background-color:#0b1020; color:#e5e7eb; "
-            "border:1px solid #1f2937; border-radius:8px; padding:8px; }"
+            "QPlainTextEdit { background-color:#f8fafc; color:#0f172a; "
+            "border:1px solid #e2e8f0; border-radius:8px; padding:8px; }"
         )
         root.addWidget(self.view, stretch=1)
 
         footer = QHBoxLayout()
         self.status_lbl = QLabel("idle")
-        self.status_lbl.setStyleSheet("color:#9ca3af;")
+        self.status_lbl.setStyleSheet("color:#475569;")
         footer.addWidget(self.status_lbl)
         footer.addStretch()
         root.addLayout(footer)
@@ -77,13 +77,13 @@ class TerminalView(QWidget):
             ts = datetime.fromisoformat(ts).strftime("%H:%M:%S")
         except Exception:
             ts = ts[-8:]
-        color = _COLOR_MAP.get(etype, "#e5e7eb")
+        color = _COLOR_MAP.get(etype, "#0f172a")
         header = f"[{ts}] {etype.upper():<13}"
         body = self._format_payload(etype, payload)
         self._write(header + " ", color=color, bold=True)
         self._write(body + "\n", color=color)
 
-    def append_raw(self, text: str, *, color: str = "#e5e7eb") -> None:
+    def append_raw(self, text: str, *, color: str = "#0f172a") -> None:
         self._write(text + "\n", color=color)
 
     # --------------------------------------------------------------- helpers
@@ -116,7 +116,7 @@ class TerminalView(QWidget):
             return f"ERROR: {payload.get('error')}"
         return str(payload)
 
-    def _write(self, text: str, *, color: str = "#e5e7eb", bold: bool = False) -> None:
+    def _write(self, text: str, *, color: str = "#0f172a", bold: bool = False) -> None:
         cur = self.view.textCursor()
         cur.movePosition(QTextCursor.End)
         fmt = QTextCharFormat()

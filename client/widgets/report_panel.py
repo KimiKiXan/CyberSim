@@ -25,7 +25,7 @@ class ReportPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
 
         header = QHBoxLayout()
-        self.title_lbl = QLabel("<b>Report Preview</b>  <span style='color:#9ca3af'>(no session loaded)</span>")
+        self.title_lbl = QLabel("<b>Report Preview</b>  <span style='color:#64748b'>(no session loaded)</span>")
         header.addWidget(self.title_lbl)
         header.addStretch()
         self.fmt_select = QComboBox()
@@ -39,8 +39,8 @@ class ReportPanel(QWidget):
         self.preview = QTextBrowser(self)
         self.preview.setOpenExternalLinks(True)
         self.preview.setStyleSheet(
-            "QTextBrowser { background-color:#0b1020; color:#e5e7eb; "
-            "border:1px solid #1f2937; border-radius:8px; padding:10px; }"
+            "QTextBrowser { background-color:#ffffff; color:#0f172a; "
+            "border:1px solid #e2e8f0; border-radius:8px; padding:10px; }"
         )
         root.addWidget(self.preview, stretch=1)
 
@@ -48,9 +48,9 @@ class ReportPanel(QWidget):
     def set_session(self, session_id: str | None, markdown: str | None) -> None:
         self._session_id = session_id
         if session_id:
-            self.title_lbl.setText(f"<b>Report Preview</b>  <span style='color:#9ca3af'>(session {session_id})</span>")
+            self.title_lbl.setText(f"<b>Report Preview</b>  <span style='color:#64748b'>(session {session_id})</span>")
         else:
-            self.title_lbl.setText("<b>Report Preview</b>  <span style='color:#9ca3af'>(no session loaded)</span>")
+            self.title_lbl.setText("<b>Report Preview</b>  <span style='color:#64748b'>(no session loaded)</span>")
         self.preview.setMarkdown(markdown or "_Build a report to preview it here._")
 
     # ------------------------------------------------------------- emits

@@ -15,41 +15,15 @@ from PyQt5.QtWidgets import (
 
 from .api_client import CyberSimClient, ServerEndpoint
 from .async_runner import AsyncBridge, StreamWorker
+from .theme import LIGHT_QSS
 from .widgets import Dashboard, ReportPanel, SessionPanel, TerminalView
-
-
-_DARK_QSS = """
-QMainWindow { background-color:#020617; color:#e5e7eb; }
-QTabWidget::pane { border:1px solid #1f2937; }
-QTabBar::tab {
-    background-color:#0b1020; color:#9ca3af; padding:8px 16px;
-    border-top-left-radius:6px; border-top-right-radius:6px;
-}
-QTabBar::tab:selected { background-color:#1f2937; color:#e5e7eb; }
-QLabel, QGroupBox { color:#e5e7eb; }
-QGroupBox {
-    border:1px solid #1f2937; border-radius:8px; margin-top:10px;
-    background-color:#0b1020;
-}
-QGroupBox::title { subcontrol-origin:margin; left:10px; padding:0 4px; }
-QPushButton {
-    background-color:#1f2937; color:#e5e7eb; border:1px solid #374151;
-    padding:6px 14px; border-radius:6px;
-}
-QPushButton:hover { background-color:#374151; }
-QLineEdit, QTextEdit, QPlainTextEdit, QComboBox {
-    background-color:#0f172a; color:#e5e7eb; border:1px solid #1f2937;
-    border-radius:6px; padding:4px;
-}
-QStatusBar { background-color:#0b1020; color:#9ca3af; }
-"""
 
 
 class MainWindow(QMainWindow):
     def __init__(self, endpoint: ServerEndpoint | None = None) -> None:
         super().__init__()
         self.setWindowTitle("CyberSim — Autonomous LLM Cyberattack Simulator")
-        self.resize(1400, 880)
+        self._apply_adaptive_geometry()
         self.client = CyberSimClient(endpoint)
         self.bridge = AsyncBridge()
         self._stream_worker: StreamWorker | None = None
@@ -61,9 +35,35 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(250, self.refresh_uploads)
         QTimer.singleShot(350, self.refresh_sessions)
 
+        # Periodically re-probe /health so the status card recovers when the
+        # server is (re)started while the client is already running.
+        self._health_timer = QTimer(self)
+        self._health_timer.setInterval(5000)   # 5 s
+        self._health_timer.timeout.connect(self.refresh_health)
+        self._health_timer.start()
+
+    # ---------------------------------------------------- adaptive geometry
+    def _apply_adaptive_geometry(self) -> None:
+        """Size the window relative to the current screen, keeping a reasonable floor."""
+        screen = QApplication.primaryScreen()
+        if screen is None:
+            self.resize(1280, 800)
+            return
+        geo = screen.availableGeometry()
+        w = max(1024, int(geo.width() * 0.85))
+        h = max(700, int(geo.height() * 0.85))
+        # Cap so very-large monitors don't open a 4K window by default.
+        w = min(w, 1920)
+        h = min(h, 1200)
+        self.resize(w, h)
+        # Center on the active screen.
+        frame = self.frameGeometry()
+        frame.moveCenter(geo.center())
+        self.move(frame.topLeft())
+
     # ----------------------------------------------------------------- UI
     def _build_ui(self) -> None:
-        self.setStyleSheet(_DARK_QSS)
+        self.setStyleSheet(LIGHT_QSS)
         self.dashboard = Dashboard()
         self.terminal = TerminalView()
         self.session_panel = SessionPanel()
@@ -77,7 +77,9 @@ class MainWindow(QMainWindow):
         right_tabs.addTab(self.session_panel, "Sessions")
         right_tabs.addTab(self.report_panel, "Report")
         splitter.addWidget(right_tabs)
-        splitter.setSizes([520, 880])
+        # Relative split — left dashboard ~37%, right tabs ~63%.
+        total = max(self.width(), 1024)
+        splitter.setSizes([int(total * 0.37), int(total * 0.63)])
         self.setCentralWidget(splitter)
 
         toolbar = QToolBar("Main")
@@ -88,7 +90,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(QAction("Open Reports Folder", self, triggered=self._open_reports_folder))
 
         sb = QStatusBar()
-        sb.setStyleSheet("color:#9ca3af;")
+        sb.setStyleSheet("color:#475569;")
         sb.showMessage(f"Endpoint: {self.client.endpoint.http_base}")
         self.setStatusBar(sb)
 
@@ -214,7 +216,7 @@ class MainWindow(QMainWindow):
         worker = StreamWorker(self.bridge, factory)
         worker.item.connect(self._on_event)
         worker.finished.connect(self._on_stream_done)
-        worker.error.connect(lambda msg: self.terminal.append_raw(msg, color="#f87171"))
+        worker.error.connect(lambda msg: self.terminal.append_raw(msg, color="#b91c1c"))
         worker.start()
         self._stream_worker = worker
 
@@ -294,6 +296,8 @@ class MainWindow(QMainWindow):
 
     # ----------------------------------------------------------- shutdown
     def closeEvent(self, event) -> None:  # noqa: N802 (Qt)
+        if hasattr(self, "_health_timer"):
+            self._health_timer.stop()
         if self._stream_worker:
             self._stream_worker.cancel()
         self.bridge.stop()
@@ -304,7 +308,7 @@ def launch() -> None:
     app = QApplication(sys.argv)
     try:
         import qdarktheme  # type: ignore
-        qdarktheme.setup_theme("dark")
+        qdarktheme.setup_theme("light")
     except Exception:
         pass
     win = MainWindow()

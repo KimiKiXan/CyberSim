@@ -42,9 +42,10 @@ class Dashboard(QWidget):
         bottom.addStretch()
         self.launch_btn = QPushButton("▶ Launch ReAct Session")
         self.launch_btn.setStyleSheet(
-            "QPushButton { background-color:#16a34a; color:white; padding:8px 18px; "
-            "border-radius:6px; font-weight:bold; } "
-            "QPushButton:hover { background-color:#15803d; }"
+            "QPushButton { background-color:#16a34a; color:#ffffff; padding:8px 18px; "
+            "border:1px solid #15803d; border-radius:6px; font-weight:bold; } "
+            "QPushButton:hover { background-color:#15803d; } "
+            "QPushButton:disabled { background-color:#bbf7d0; color:#f0fdf4; border-color:#86efac; }"
         )
         self.launch_btn.clicked.connect(self._emit_launch)
         bottom.addWidget(self.launch_btn)
@@ -56,7 +57,7 @@ class Dashboard(QWidget):
         h_l = QVBoxLayout(health_box)
         self.health_lbl = QLabel("checking…")
         self.health_lbl.setWordWrap(True)
-        self.health_lbl.setStyleSheet("color:#e5e7eb; font-family: Consolas, monospace;")
+        self.health_lbl.setStyleSheet("color:#0f172a; font-family: Consolas, monospace;")
         h_l.addWidget(self.health_lbl)
         btn_row = QHBoxLayout()
         btn_row.addWidget(QPushButton("Refresh", clicked=self.refresh_health_requested.emit))
@@ -72,14 +73,14 @@ class Dashboard(QWidget):
         up_box = QGroupBox("Scripts / Exploits / Wordlists")
         u_l = QVBoxLayout(up_box)
         u_l.addWidget(QLabel(
-            "<span style='color:#9ca3af'>Upload custom payloads or wordlists. Files "
+            "<span style='color:#64748b'>Upload custom payloads or wordlists. Files "
             "are stored under ./uploads/ on the server and can be referenced by tool "
             "arguments (e.g. wordlist=./uploads/custom.txt).</span>"
         ))
         self.uploads_list = QListWidget()
         self.uploads_list.setStyleSheet(
-            "QListWidget { background-color:#0f172a; color:#e5e7eb; "
-            "border:1px solid #1f2937; border-radius:6px; }"
+            "QListWidget { background-color:#ffffff; color:#0f172a; "
+            "border:1px solid #e2e8f0; border-radius:6px; }"
         )
         u_l.addWidget(self.uploads_list, stretch=1)
         ub = QHBoxLayout()
@@ -107,9 +108,9 @@ class Dashboard(QWidget):
     def set_health(self, text: str, ok: bool) -> None:
         self.health_lbl.setText(text)
         if ok:
-            self.health_lbl.setStyleSheet("color:#34d399; font-family: Consolas, monospace;")
+            self.health_lbl.setStyleSheet("color:#15803d; font-family: Consolas, monospace;")
         else:
-            self.health_lbl.setStyleSheet("color:#f87171; font-family: Consolas, monospace;")
+            self.health_lbl.setStyleSheet("color:#b91c1c; font-family: Consolas, monospace;")
 
     def set_uploads(self, items: list[dict]) -> None:
         self.uploads_list.clear()
