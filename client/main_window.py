@@ -114,12 +114,12 @@ class MainWindow(QMainWindow):
                 result = _fut.result()
             except Exception as exc:  # noqa: BLE001
                 if on_err:
-                    QTimer.singleShot(0, lambda: on_err(exc))
+                    self.bridge.post_to_gui(lambda e=exc: on_err(e))
                 else:
-                    QTimer.singleShot(0, lambda: self._error(f"{type(exc).__name__}: {exc}"))
+                    self.bridge.post_to_gui(lambda e=exc: self._error(f"{type(e).__name__}: {e}"))
                 return
             if on_ok:
-                QTimer.singleShot(0, lambda: on_ok(result))
+                self.bridge.post_to_gui(lambda r=result: on_ok(r))
 
         fut.add_done_callback(_cb)
 

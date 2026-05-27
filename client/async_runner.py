@@ -6,9 +6,24 @@ import threading
 from concurrent.futures import Future
 from typing import Any, AsyncIterator, Callable, Coroutine, TypeVar
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
 
 T = TypeVar("T")
+
+
+class _Dispatcher(QObject):
+    """Owned by the GUI thread; accepts callables from any thread via a signal."""
+    _fn = pyqtSignal(object)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._fn.connect(self._invoke, Qt.QueuedConnection)
+
+    def _invoke(self, fn: Callable) -> None:
+        fn()
+
+    def post(self, fn: Callable) -> None:
+        self._fn.emit(fn)
 
 
 class AsyncBridge(QObject):
@@ -16,6 +31,7 @@ class AsyncBridge(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+        self._dispatcher = _Dispatcher()
         self._loop: asyncio.AbstractEventLoop | None = None
         self._ready = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True, name="cybersim-async")
@@ -31,6 +47,10 @@ class AsyncBridge(QObject):
     def submit(self, coro: Coroutine[Any, Any, T]) -> Future[T]:
         assert self._loop is not None
         return asyncio.run_coroutine_threadsafe(coro, self._loop)
+
+    def post_to_gui(self, fn: Callable) -> None:
+        """Schedule fn() to run on the GUI thread, safe to call from any thread."""
+        self._dispatcher.post(fn)
 
     def stop(self) -> None:
         if self._loop and self._loop.is_running():
