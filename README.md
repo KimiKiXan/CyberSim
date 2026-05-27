@@ -102,7 +102,7 @@ agent — the rest of CyberSim keeps running.
 .\run_server.bat
 ```
 
-The FastAPI backend will listen on `http://26.26.97.36:4899` (or whatever
+The FastAPI backend will listen on `http://localhost:4899` (or whatever
 `CYBERSIM_HOST` / `CYBERSIM_PORT` you configured).
 
 ### 4. Start the client (in a second terminal)
@@ -138,7 +138,7 @@ Highlights:
 | `OLLAMA_TEMPERATURE`      | `0.1`                              | Sampling temperature (low = strict JSON) |
 | `OLLAMA_KEEP_ALIVE`       | `60m`                              | How long the model stays resident        |
 | `OLLAMA_FLASH_ATTENTION`  | `1`                                | Enables Flash-Attention in Ollama        |
-| `CYBERSIM_HOST` / `_PORT` | `26.26.97.36` / `4899`             | FastAPI bind / client endpoint           |
+| `CYBERSIM_HOST` / `_PORT` | `localhost` / `4899`             | FastAPI bind / client endpoint           |
 | `AGENT_MAX_ITERATIONS`    | `40`                               | Maximum ReAct steps per session          |
 | `MSFRPC_PASSWORD`         | _(unset)_                          | Enables the Metasploit tool when set     |
 

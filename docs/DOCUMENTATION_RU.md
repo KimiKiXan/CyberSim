@@ -270,7 +270,7 @@ CyberSim читает конфигурацию из переменных окр�
 
 | Переменная           | По умолчанию   | Описание                                       |
 |----------------------|----------------|------------------------------------------------|
-| `CYBERSIM_HOST`      | `26.26.97.36`  | Адрес привязки FastAPI (VPN-хост оператора)     |
+| `CYBERSIM_HOST`      | `localhost`  | Адрес привязки FastAPI (VPN-хост оператора)     |
 | `CYBERSIM_PORT`      | `4899`         | Порт привязки FastAPI                           |
 | `CYBERSIM_RELOAD`    | `false`        | Установите `true` для авто-перезагрузки Uvicorn |
 
@@ -346,13 +346,13 @@ ollama list             # убедитесь, что qwen2.5:14b-instruct-q5_K_M
 
 ```
 INFO  CyberSim server ready on http://127.0.0.1:11434 using model=qwen2.5:14b-instruct-q5_K_M
-INFO  Uvicorn running on http://26.26.97.36:4899
+INFO  Uvicorn running on http://localhost:4899
 ```
 
 Быстрая проверка работоспособности:
 
 ```powershell
-curl http://26.26.97.36:4899/health
+curl http://localhost:4899/health
 ```
 
 ### 6.3 Запустить клиент PyQt5
@@ -370,13 +370,13 @@ curl http://26.26.97.36:4899/health
 
 ## 7. Подключение клиента к серверу
 
-По умолчанию клиент ищет сервер по адресу `26.26.97.36:4899` — это
+По умолчанию клиент ищет сервер по адресу `localhost:4899` — это
 VPN-присвоенный хост оператора (стиль Radmin VPN / Hamachi, подсеть
 26.x.x.x). Чтобы указать другой адрес, экспортируйте переменные окружения
 перед запуском клиента:
 
 ```powershell
-$env:CYBERSIM_HOST = "26.26.97.36"
+$env:CYBERSIM_HOST = "localhost"
 $env:CYBERSIM_PORT = "4899"
 .\run_client.bat
 ```
@@ -385,8 +385,8 @@ $env:CYBERSIM_PORT = "4899"
 отчётов, загрузка файлов) и WebSocket для потока событий реального времени:
 
 ```
-HTTP  : http://26.26.97.36:4899/api/...
-WS    : ws://26.26.97.36:4899/ws/sessions/<идентификатор-сессии>
+HTTP  : http://localhost:4899/api/...
+WS    : ws://localhost:4899/ws/sessions/<идентификатор-сессии>
 ```
 
 ### Устранение проблем подключения

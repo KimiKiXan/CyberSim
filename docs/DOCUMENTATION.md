@@ -267,7 +267,7 @@ export the variables in your shell.
 
 | Variable             | Default        | Description                                    |
 |----------------------|----------------|------------------------------------------------|
-| `CYBERSIM_HOST`      | `26.26.97.36`  | FastAPI bind address (operator VPN host)        |
+| `CYBERSIM_HOST`      | `localhost`  | FastAPI bind address (operator VPN host)        |
 | `CYBERSIM_PORT`      | `4899`         | FastAPI bind port                              |
 | `CYBERSIM_RELOAD`    | `false`        | Set `true` to enable Uvicorn auto-reload        |
 
@@ -342,13 +342,13 @@ You should see:
 
 ```
 INFO  CyberSim server ready on http://127.0.0.1:11434 using model=qwen2.5:14b-instruct-q5_K_M
-INFO  Uvicorn running on http://26.26.97.36:4899
+INFO  Uvicorn running on http://localhost:4899
 ```
 
 A quick health check:
 
 ```powershell
-curl http://26.26.97.36:4899/health
+curl http://localhost:4899/health
 ```
 
 ### 6.3 Start the PyQt5 Client
@@ -365,12 +365,12 @@ The CyberSim window opens. If the status bar shows "server: OK" you are ready.
 
 ## 7. Connecting the Client to the Server
 
-By default the client looks for the server on `26.26.97.36:4899` — the
+By default the client looks for the server on `localhost:4899` — the
 operator's VPN-assigned host (Radmin / Hamachi-style 26.x.x.x). To target a
 different server, export environment variables before launching the client:
 
 ```powershell
-$env:CYBERSIM_HOST = "26.26.97.36"
+$env:CYBERSIM_HOST = "localhost"
 $env:CYBERSIM_PORT = "4899"
 .\run_client.bat
 ```
@@ -379,8 +379,8 @@ The client uses HTTP for control plane traffic (start session, list reports,
 upload files, etc.) and a WebSocket for the live event stream:
 
 ```
-HTTP  : http://26.26.97.36:4899/api/...
-WS    : ws://26.26.97.36:4899/ws/sessions/<session-id>
+HTTP  : http://localhost:4899/api/...
+WS    : ws://localhost:4899/ws/sessions/<session-id>
 ```
 
 ### Connectivity Troubleshooting

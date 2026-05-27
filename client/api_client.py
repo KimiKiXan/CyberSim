@@ -3,20 +3,19 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, AsyncIterator
 
 import httpx
 import websockets
 
+from config.settings import CONFIG
+
 
 @dataclass
 class ServerEndpoint:
-    # Default endpoint matches the operator's VPN-assigned host.
-    # Override per-instance or via CYBERSIM_HOST / CYBERSIM_PORT.
-    host: str = "26.26.97.36"
-    port: int = 4899
+    host: str = field(default_factory=lambda: CONFIG.server.host)
+    port: int = field(default_factory=lambda: CONFIG.server.port)
 
     @property
     def http_base(self) -> str:
@@ -29,10 +28,7 @@ class ServerEndpoint:
 
 class CyberSimClient:
     def __init__(self, endpoint: ServerEndpoint | None = None) -> None:
-        self.endpoint = endpoint or ServerEndpoint(
-            host=os.getenv("CYBERSIM_HOST", "26.26.97.36"),
-            port=int(os.getenv("CYBERSIM_PORT", "4899")),
-        )
+        self.endpoint = endpoint or ServerEndpoint()
 
     # ---------------------------------------------------------------- HTTP API
     async def health(self) -> dict[str, Any]:

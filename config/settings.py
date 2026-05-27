@@ -5,7 +5,10 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(ROOT / ".env", override=False)
 
 
 @dataclass
@@ -26,11 +29,8 @@ class OllamaConfig:
 
 @dataclass
 class ServerConfig:
-    # The server binds on this address and the client connects to it. Default
-    # is the operator's VPN-assigned host so multiple lab machines can reach
-    # the same backend; override with CYBERSIM_HOST / CYBERSIM_PORT.
-    host: str = os.getenv("CYBERSIM_HOST", "26.26.97.36")
-    port: int = int(os.getenv("CYBERSIM_PORT", "4899"))
+    host: str = os.getenv("SERVER_HOST", "localhost")
+    port: int = int(os.getenv("SERVER_PORT", "4899"))
     reload: bool = os.getenv("CYBERSIM_RELOAD", "false").lower() == "true"
 
 

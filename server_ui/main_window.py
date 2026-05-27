@@ -40,7 +40,7 @@ class ServerControlWindow(QMainWindow):
 
         self.server = ServerProcessController(self)
         self.ollama = OllamaController(self)
-        self._http_base = f"http://127.0.0.1:{CONFIG.server.port}"
+        self._http_base = f"http://{CONFIG.server.host}:{CONFIG.server.port}"
 
         self._build_ui()
         self._wire()
